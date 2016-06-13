@@ -90,12 +90,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	// shim for using process in browser
 
 	var process = module.exports = {};
+
+	// cached from whatever global is present so that test runners that stub it don't break things.
+	var cachedSetTimeout = setTimeout;
+	var cachedClearTimeout = clearTimeout;
+
 	var queue = [];
 	var draining = false;
 	var currentQueue;
 	var queueIndex = -1;
 
 	function cleanUpNextTick() {
+	    if (!draining || !currentQueue) {
+	        return;
+	    }
 	    draining = false;
 	    if (currentQueue.length) {
 	        queue = currentQueue.concat(queue);
@@ -111,7 +119,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (draining) {
 	        return;
 	    }
-	    var timeout = setTimeout(cleanUpNextTick);
+	    var timeout = cachedSetTimeout(cleanUpNextTick);
 	    draining = true;
 
 	    var len = queue.length;
@@ -128,7 +136,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    currentQueue = null;
 	    draining = false;
-	    clearTimeout(timeout);
+	    cachedClearTimeout(timeout);
 	}
 
 	process.nextTick = function (fun) {
@@ -140,7 +148,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    queue.push(new Item(fun, args));
 	    if (queue.length === 1 && !draining) {
-	        setTimeout(drainQueue, 0);
+	        cachedSetTimeout(drainQueue, 0);
 	    }
 	};
 
@@ -1145,6 +1153,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  dropUp: _react2.default.PropTypes.bool,
 	  duration: _react2.default.PropTypes.number, //popup
 
+	  dropOnFocus: _react2.default.PropTypes.bool,
+	  arrowDropDown: _react2.default.PropTypes.bool,
+
 	  disabled: _propTypes2.default.disabled.acceptsArray,
 	  readOnly: _propTypes2.default.readOnly.acceptsArray,
 
@@ -1162,7 +1173,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  mixins: [__webpack_require__(47), __webpack_require__(48), __webpack_require__(49), __webpack_require__(50), __webpack_require__(55), __webpack_require__(40)(), __webpack_require__(56)({
 	    didHandle: function didHandle(focused) {
-	      if (!focused) this.close();
+	      if (!focused) this.close();else if (focused && !this.state.open) {
+	        this.open();
+	      }
 	    }
 	  })],
 
@@ -1176,7 +1189,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      data: [],
 	      searchTerm: '',
 	      messages: msgs(),
-	      ariaActiveDescendantKey: 'dropdownlist'
+	      ariaActiveDescendantKey: 'dropdownlist',
+	      dropOnFocus: false,
+	      arrowDropDown: false
 	    };
 	  },
 	  getInitialState: function getInitialState() {
@@ -1390,6 +1405,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        focusedItem = this.state.focusedItem,
 	        selectedItem = this.state.selectedItem,
 	        isOpen = this.props.open,
+	        arrowDropDown = this.props.arrowDropDown,
 	        closeWithFocus = function closeWithFocus() {
 	      _this3.close(), _compat2.default.findDOMNode(_this3).focus();
 	    };
@@ -1414,7 +1430,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      e.preventDefault();
 	      this.open();
 	    } else if (key === 'ArrowDown') {
-	      if (alt) this.open();else if (isOpen) this.setState({ focusedItem: list.next(focusedItem) });else change(list.next(selectedItem));
+	      if (alt) this.open();else if (isOpen) this.setState({ focusedItem: list.next(focusedItem) });else this.open();
 	      e.preventDefault();
 	    } else if (key === 'ArrowUp') {
 	      if (alt) closeWithFocus();else if (isOpen) this.setState({ focusedItem: list.prev(focusedItem) });else change(list.prev(selectedItem));
@@ -4165,7 +4181,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        placeholder: placeholder,
 	        disabled: disabled,
 	        readOnly: readOnly,
-	        className: 'rw-input',
 	        value: (0, _dataHelpers.dataText)(valueItem, textField),
 	        onChange: this._inputTyping,
 	        onKeyDown: this._inputKeyDown
@@ -5529,7 +5544,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      case DAY:
 	        return dates.date(date, dates.date(date) + num)
 	      case WEEK:
-	        return dates.date(date, dates.date(date) + (7 * num))
+	        return dates.date(date, dates.date(date) + (7 * num)) 
 	      case MONTH:
 	        return monthMath(date, num)
 	      case DECADE:
@@ -5566,17 +5581,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	          date = dates.milliseconds(date, 0);
 	    }
 
-	    if (unit === DECADE)
+	    if (unit === DECADE) 
 	      date = dates.subtract(date, dates.year(date) % 10, 'year')
-
-	    if (unit === CENTURY)
+	    
+	    if (unit === CENTURY) 
 	      date = dates.subtract(date, dates.year(date) % 100, 'year')
 
-	    if (unit === WEEK)
+	    if (unit === WEEK) 
 	      date = dates.weekday(date, 0, firstOfWeek);
 
 	    return date
 	  },
+
 
 	  endOf: function(date, unit, firstOfWeek){
 	    date = new Date(date)
@@ -5600,7 +5616,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  max: function(){
 	    return new Date(Math.max.apply(Math, arguments))
 	  },
-
+	  
 	  inRange: function(day, min, max, unit){
 	    unit = unit || 'day'
 
@@ -5618,13 +5634,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	  year:           createAccessor('FullYear'),
 
 	  decade: function (date, val) {
-	    return val === undefined
+	    return val === undefined 
 	      ? dates.year(dates.startOf(date, DECADE))
 	      : dates.add(date, val + 10, YEAR);
 	  },
 
 	  century: function (date, val) {
-	    return val === undefined
+	    return val === undefined 
 	      ? dates.year(dates.startOf(date, CENTURY))
 	      : dates.add(date, val + 100, YEAR);
 	  },
@@ -5632,12 +5648,65 @@ return /******/ (function(modules) { // webpackBootstrap
 	  weekday: function (date, val, firstDay) {
 	      var weekday = (dates.day(date) + 7 - (firstDay || 0) ) % 7;
 
-	      return val === undefined
-	        ? weekday
+	      return val === undefined 
+	        ? weekday 
 	        : dates.add(date, val - weekday, DAY);
-	  }
-	}
+	  },
 
+	  diff: function (date1, date2, unit, asFloat) {
+	    var dividend, divisor, result;
+
+	    switch (unit) {
+	      case MILI:
+	      case SECONDS:
+	      case MINUTES:
+	      case HOURS:
+	      case DAY:
+	      case WEEK:
+	        dividend = date2.getTime() - date1.getTime(); break;
+	      case MONTH:
+	      case YEAR:
+	      case DECADE:
+	      case CENTURY:
+	        dividend = (dates.year(date2) - dates.year(date1)) * 12 + dates.month(date2) - dates.month(date1); break;
+	      default:
+	        throw new TypeError('Invalid units: "' + unit + '"');
+	    }
+
+	    switch (unit) {
+	      case MILI:
+	          divisor = 1; break;
+	      case SECONDS:
+	          divisor = 1000; break;
+	      case MINUTES:
+	          divisor = 1000 * 60; break;
+	      case HOURS:
+	          divisor = 1000 * 60 * 60; break;
+	      case DAY:
+	          divisor = 1000 * 60 * 60 * 24; break;
+	      case WEEK:
+	          divisor = 1000 * 60 * 60 * 24 * 7; break;
+	      case MONTH:
+	          divisor = 1; break;
+	      case YEAR:
+	          divisor = 12; break;
+	      case DECADE:
+	          divisor = 120; break;
+	      case CENTURY:
+	          divisor = 1200; break;
+	      default:
+	        throw new TypeError('Invalid units: "' + unit + '"');
+	    }
+
+	    result = dividend / divisor;
+
+	    return asFloat ? result : absoluteFloor(result);
+	  }
+	};
+
+	function absoluteFloor(number) {
+	  return number < 0 ? Math.ceil(number) : Math.floor(number);
+	}
 
 	function monthMath(date, val){
 	  var current = dates.month(date)
@@ -5645,8 +5714,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    date = dates.month(date, newMonth)
 
-	    if (newMonth < 0 ) newMonth = 12 + val
-
+	    while (newMonth < 0 ) newMonth = 12 + newMonth
+	      
 	    //month rollover
 	    if ( dates.month(date) !== ( newMonth % 12))
 	      date = dates.date(date, 0) //move to last of month
@@ -5666,8 +5735,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function createComparer(operator) {
-	  return function (a, b, unit, maybeFoW) {
-	    return operator(+dates.startOf(a, unit, maybeFoW), +dates.startOf(b, unit, maybeFoW))
+	  return function (a, b, unit) {
+	    return operator(+dates.startOf(a, unit), +dates.startOf(b, unit))
 	  };
 	}
 

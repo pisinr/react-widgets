@@ -48,6 +48,9 @@ var propTypes = {
   dropUp:         React.PropTypes.bool,
   duration:       React.PropTypes.number, //popup
 
+  dropOnFocus:    React.PropTypes.bool,
+  arrowDropDown:  React.PropTypes.bool,
+
   disabled:       CustomPropTypes.disabled.acceptsArray,
   readOnly:       CustomPropTypes.readOnly.acceptsArray,
 
@@ -73,6 +76,9 @@ var DropdownList = React.createClass({
     require('./mixins/FocusMixin')({
       didHandle(focused) {
         if (!focused) this.close()
+        else if (focused && !this.state.open) {
+          this.open()
+        }
       }
     })
   ],
@@ -87,7 +93,9 @@ var DropdownList = React.createClass({
       data: [],
       searchTerm: '',
       messages: msgs(),
-      ariaActiveDescendantKey: 'dropdownlist'
+      ariaActiveDescendantKey: 'dropdownlist',
+      dropOnFocus: false,
+      arrowDropDown: false,
     }
   },
 
@@ -267,6 +275,7 @@ var DropdownList = React.createClass({
       , focusedItem = this.state.focusedItem
       , selectedItem = this.state.selectedItem
       , isOpen = this.props.open
+      , arrowDropDown = this.props.arrowDropDown
       , closeWithFocus = () => { this.close(), compat.findDOMNode(this).focus()};
 
     notify(this.props.onKeyDown, [e])
@@ -299,7 +308,7 @@ var DropdownList = React.createClass({
     else if (key === 'ArrowDown') {
       if (alt)         this.open()
       else if (isOpen) this.setState({ focusedItem: list.next(focusedItem) })
-      else             change(list.next(selectedItem))
+      else             this.open()
       e.preventDefault()
     }
     else if (key === 'ArrowUp') {
