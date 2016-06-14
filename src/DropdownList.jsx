@@ -75,7 +75,6 @@ var DropdownList = React.createClass({
     require('./mixins/AriaDescendantMixin')(),
     require('./mixins/FocusMixin')({
       didHandle(focused) {
-        console.log("didHandle", focused, this.state.open)
         if (!focused) this.close()
         else if (focused && (!this.state.focused) && (!this.props.readOnly)) {
           this.open()

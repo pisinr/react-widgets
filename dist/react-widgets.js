@@ -1173,7 +1173,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  mixins: [__webpack_require__(47), __webpack_require__(48), __webpack_require__(49), __webpack_require__(50), __webpack_require__(55), __webpack_require__(40)(), __webpack_require__(56)({
 	    didHandle: function didHandle(focused) {
-	      console.log("didHandle", focused, this.state.open);
 	      if (!focused) this.close();else if (focused && !this.state.focused && !this.props.readOnly) {
 	        this.open();
 	      }
