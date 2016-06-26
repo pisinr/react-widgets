@@ -74,10 +74,16 @@ var DropdownList = React.createClass({
     require('./mixins/RtlParentContextMixin'),
     require('./mixins/AriaDescendantMixin')(),
     require('./mixins/FocusMixin')({
-      didHandle(focused) {
-        if (!focused) this.close()
-        else if (focused && (!this.state.focused) && (!this.props.readOnly)) {
+      didHandle(focused, event) {
+        if (!focused) {
+          this.close()
+        }else if (focused && (!this.state.focused) && (!this.props.readOnly) && (!this.props.open)) {
+          this.setState({openFromFocus: true})
           this.open()
+          var self = this;
+          setTimeout(function(){
+            self.setState({openFromFocus: false})
+          }, 300)
         }
       }
     })
@@ -256,11 +262,18 @@ var DropdownList = React.createClass({
   _click(e){
     var wrapper = this.refs.filterWrapper
 
-    if( !this.props.filter || !this.props.open )
+    if( !this.props.filter || !this.props.open ) {
       this.toggle()
+    }
 
-    else if( !contains(compat.findDOMNode(wrapper), e.target))
-      this.close()
+    else if( !contains(compat.findDOMNode(wrapper), e.target)) {
+      if (!this.state.openFromFocus) {
+        this.close()
+        this.setState({openFromFocus: false})
+      }
+    }
+
+    // this.setState({openFromFocus: false})
 
     notify(this.props.onClick, e)
   },

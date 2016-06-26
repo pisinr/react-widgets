@@ -1172,9 +1172,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	  displayName: 'DropdownList',
 
 	  mixins: [__webpack_require__(47), __webpack_require__(48), __webpack_require__(49), __webpack_require__(50), __webpack_require__(55), __webpack_require__(40)(), __webpack_require__(56)({
-	    didHandle: function didHandle(focused) {
-	      if (!focused) this.close();else if (focused && !this.state.focused && !this.props.readOnly) {
+	    didHandle: function didHandle(focused, event) {
+	      if (!focused) {
+	        this.close();
+	      } else if (focused && !this.state.focused && !this.props.readOnly && !this.props.open) {
+	        this.setState({ openFromFocus: true });
 	        this.open();
+	        var self = this;
+	        setTimeout(function () {
+	          self.setState({ openFromFocus: false });
+	        }, 300);
 	      }
 	    }
 	  })],
@@ -1390,7 +1397,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	  _click: function _click(e) {
 	    var wrapper = this.refs.filterWrapper;
 
-	    if (!this.props.filter || !this.props.open) this.toggle();else if (!(0, _contains2.default)(_compat2.default.findDOMNode(wrapper), e.target)) this.close();
+	    if (!this.props.filter || !this.props.open) {
+	      this.toggle();
+	    } else if (!(0, _contains2.default)(_compat2.default.findDOMNode(wrapper), e.target)) {
+	      if (!this.state.openFromFocus) {
+	        this.close();
+	        this.setState({ openFromFocus: false });
+	      }
+	    }
+
+	    // this.setState({openFromFocus: false})
 
 	    (0, _widgetHelpers.notify)(this.props.onClick, e);
 	  },
